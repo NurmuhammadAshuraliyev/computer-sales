@@ -30,11 +30,18 @@ export class AuthService {
         ...registerDto,
         password: hashPassword,
       },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        username: true,
+      },
     });
 
     const token = await this.jwtService.signAsync({ userId: user.id });
 
-    return { message: 'Mofaqtyatli rohatan otingiz.', token };
+    return { message: 'Siz muvaffaqiyatli ravishda o‘tdingiz.', token, user };
   }
 
   async login(loginDto: LoginDto) {
@@ -57,13 +64,18 @@ export class AuthService {
 
     const token = await this.jwtService.signAsync({ userId: findUsername.id });
 
-    return { message: 'Mofaqtyatli tizimga kirdingiz.', token };
+    const data = {
+      ...findUsername,
+      password: '',
+    };
+
+    return { message: 'Siz muvaffaqiyatli tizimga kirdingiz.', token, data };
   }
 
   async me(token: string) {
     const { userId } = await this.jwtService.verifyAsync(token);
 
-    if (!userId) throw new NotFoundException('Token topilmadi.');
+    if (!userId) throw new NotFoundException('Token not found.');
 
     const user = await this.db.prisma.user.findUnique({
       where: {
@@ -78,7 +90,7 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new NotFoundException('Information not fount.');
+    if (!user) throw new NotFoundException('Information not found.');
 
     return user;
   }

@@ -24,7 +24,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      const { message, token } = await this.authService.register(registerDto);
+      const { message, token, user } =
+        await this.authService.register(registerDto);
 
       res.cookie('token', token, {
         httpOnly: true,
@@ -34,7 +35,7 @@ export class AuthController {
         sameSite: 'lax',
       });
 
-      return { message, token };
+      return { message, token, user };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
@@ -47,7 +48,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      const { message, token } = await this.authService.login(loginDto);
+      const { message, token, data } = await this.authService.login(loginDto);
 
       res.cookie('token', token, {
         httpOnly: true,
@@ -57,7 +58,7 @@ export class AuthController {
         sameSite: 'lax',
       });
 
-      return { message, token };
+      return { message, token, data };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
