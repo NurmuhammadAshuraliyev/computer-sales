@@ -36,6 +36,8 @@ export class AuthService {
         lastName: true,
         phoneNumber: true,
         username: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -64,19 +66,15 @@ export class AuthService {
 
     const token = await this.jwtService.signAsync({ userId: findUsername.id });
 
-    const data = {
+    const user = {
       ...findUsername,
       password: '',
     };
 
-    return { message: 'Siz muvaffaqiyatli tizimga kirdingiz.', token, data };
+    return { message: 'Siz muvaffaqiyatli tizimga kirdingiz.', token, user };
   }
 
-  async me(token: string) {
-    const { userId } = await this.jwtService.verifyAsync(token);
-
-    if (!userId) throw new NotFoundException('Token not found.');
-
+  async me(userId: string) {
     const user = await this.db.prisma.user.findUnique({
       where: {
         id: userId,
@@ -87,6 +85,8 @@ export class AuthService {
         lastName: true,
         username: true,
         phoneNumber: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 

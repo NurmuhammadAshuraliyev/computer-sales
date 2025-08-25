@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Res,
+  SetMetadata,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -19,6 +20,7 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(200)
+  @SetMetadata('isPublic', true)
   async register(
     @Body() registerDto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
@@ -43,12 +45,13 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
+  @SetMetadata('isPublic', true)
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     try {
-      const { message, token, data } = await this.authService.login(loginDto);
+      const { message, token, user } = await this.authService.login(loginDto);
 
       res.cookie('token', token, {
         httpOnly: true,
@@ -56,9 +59,10 @@ export class AuthController {
         maxAge: 48 * 60 * 60 * 1000,
         path: '/',
         sameSite: 'lax',
+        domain: 'localhost',
       });
 
-      return { message, token, data };
+      return { message, token, user };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
@@ -68,11 +72,11 @@ export class AuthController {
   @HttpCode(200)
   async me(@Req() req: Request) {
     try {
-      const token = req.cookies['token'];
+      const userId = req['userId'];
 
-      const data = await this.authService.me(token);
+      const user = await this.authService.me(userId);
 
-      return data;
+      return { user };
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
