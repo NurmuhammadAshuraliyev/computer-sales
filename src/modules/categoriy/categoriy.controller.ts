@@ -9,7 +9,7 @@ import {
 import { CategoriyService } from './categoriy.service';
 import { CreateCategoriyDto } from './dto/create.cotegoriy.dto';
 
-@Controller('/categoriy')
+@Controller('/category')
 export class CategoriyController {
   constructor(private readonly categoriyService: CategoriyService) {}
 
@@ -17,9 +17,7 @@ export class CategoriyController {
   @HttpCode(200)
   async getCategory() {
     try {
-      const { data } = await this.categoriyService.getCategory();
-
-      return { data };
+      return await this.categoriyService.getCategory();
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }

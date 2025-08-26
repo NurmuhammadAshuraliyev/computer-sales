@@ -17,18 +17,16 @@ export class OrderController {
   @HttpCode(200)
   async getOrders() {
     try {
-      const { data } = await this.orderService.getOrders();
-
-      return { data };
+      return await this.orderService.getOrders();
     } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }
 
   @Post('/create')
-  async createOrders() {
+  async createOrders(@Body() createOrderDto: CreateOrderDto[]) {
     try {
-      await this.orderService.createOrders();
+      await this.orderService.createOrders(createOrderDto);
 
       return { message: 'Malumotlar qoshildi.' };
     } catch (error) {
