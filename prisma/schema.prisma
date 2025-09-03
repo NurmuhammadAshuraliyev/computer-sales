@@ -7,37 +7,81 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id String @id @default(uuid())
-  firstName String? @db.VarChar(50)
-  lastName String? @db.VarChar(50)
-  password String
-  username String @unique @db.VarChar(50)
-  phoneNumber String? @unique @db.VarChar(30)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+model User {
+  id          String    @id @default(uuid())
+  firstName   String?   @db.VarChar(50)
+  lastName    String?   @db.VarChar(50)
+  password    String
+  username    String    @unique @db.VarChar(50)
+  role        Role @default(USER)
+  phoneNumber String?   @unique @db.VarChar(30)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // relationships
+  suggests    Suggest[]
+  reviews     Review[]
 
   @@map("users")
 }
 
 
-model Categoriy {
-  id String @id @default(uuid())
-  title String 
-  price Int
-  imageUrl String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-
-  @@map("categoriys")
+enum Role {
+  USER
+  ADMIN
 }
 
+model Category {
+  id        String    @id @default(uuid())
+  title     String     @db.VarChar(100)
+  price     Float?
+  imageUrl  String?
+  products  Suggest[]
+  reviews   Review[]
 
-model Orders {
-  id String @id @default(uuid())
-  title String 
-  price Int 
-  imageUrl String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("category")
+}
+
+model Suggest {
+  id          String    @id @default(uuid())
+  title       String     @db.VarChar(150)
+  price       Float
+  rate        Float?     // 0-5 reyting
+  discount    Float?     // % shaklida
+  description String?
+  image       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // relationships
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+
+  reviews     Review[]
+
+  @@map("suggest")
+}
+
+model Review {
+  id         String    @id @default(uuid())
+  content    String?
+  rating     Int?       // 1-5 baho
+  createdAt  DateTime   @default(now())
+
+  productId  String
+  product    Suggest    @relation(fields: [productId], references: [id])
+
+  categoryId String
+  category   Category   @relation(fields: [categoryId], references: [id])
+
+  userId     String
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@map("review")
 }
