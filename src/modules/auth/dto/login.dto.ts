@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class LoginDto {
   @ApiProperty({
     description: 'Foydalanuvchi nomi (login)',
-    example: 'azizbek_99',
+    example: 'alo',
     maxLength: 50,
     minLength: 3,
   })
@@ -15,7 +15,7 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'Parol',
-    example: 'StrongP@ssw0rd',
+    example: 'aloadmin',
     maxLength: 50,
     minLength: 5,
   })

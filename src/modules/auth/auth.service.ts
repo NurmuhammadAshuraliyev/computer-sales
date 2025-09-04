@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -8,6 +9,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import { AdminLoginDto } from './dto/admin.login.dto';
 
 @Injectable()
 export class AuthService {
@@ -58,6 +60,34 @@ export class AuthService {
 
     const comparePassword = await bcrypt.compare(
       loginDto.password,
+      findUsername.password,
+    );
+
+    if (!comparePassword)
+      throw new NotFoundException('Username or password error.');
+
+    const token = await this.jwtService.signAsync({ userId: findUsername.id });
+
+    const user = {
+      ...findUsername,
+      password: '',
+    };
+
+    return { message: 'Siz muvaffaqiyatli tizimga kirdingiz.', token, user };
+  }
+
+  async adminLogin(adminLoginDto: AdminLoginDto) {
+    const findUsername = await this.db.prisma.user.findUnique({
+      where: {
+        username: adminLoginDto.username,
+      },
+    });
+
+    if (!findUsername)
+      throw new NotFoundException('Username or password error.');
+
+    const comparePassword = await bcrypt.compare(
+      adminLoginDto.password,
       findUsername.password,
     );
 

@@ -17,7 +17,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_KEY'),
         signOptions: {
-          expiresIn: '2h',
+          expiresIn: '1h',
         },
       }),
       inject: [ConfigService],

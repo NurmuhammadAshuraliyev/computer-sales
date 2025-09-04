@@ -15,9 +15,6 @@ export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {
   })
   price?: number;
 
-  @ApiPropertyOptional({
-    description: 'Yangilangan rasm nomi (faqat fayl nomi)',
-    example: '1693671289-123456789.png',
-  })
+  // imageUrl endi faqat server tomonidan o‘rnatiladi
   imageUrl?: string;
 }

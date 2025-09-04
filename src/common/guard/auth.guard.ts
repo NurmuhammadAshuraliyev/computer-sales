@@ -1,9 +1,10 @@
 import {
+  BadRequestException,
   CanActivate,
   ConflictException,
   ExecutionContext,
   Injectable,
-  InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -47,7 +48,7 @@ export class AuthGuard implements CanActivate {
 
       return true;
     } catch (error) {
-      throw new InternalServerErrorException('Token topilmadi.');
+      throw new UnauthorizedException('Token topilmadi.');
     }
   }
 }

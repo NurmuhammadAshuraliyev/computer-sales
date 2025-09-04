@@ -18,8 +18,9 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryService } from './categoriy.service';
 import { CreateCategoryDto } from './dto/create.cotegoriy.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { extname } from 'path';
+import path, { extname } from 'path';
 import { diskStorage } from 'multer';
+import { v4 as uuid } from 'uuid';
 import {
   ApiTags,
   ApiOperation,
@@ -65,8 +66,7 @@ export class CategoryController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix = uuid();
           cb(null, uniqueSuffix + extname(file.originalname));
         },
       }),
@@ -80,6 +80,7 @@ export class CategoryController {
       if (file) {
         dto.imageUrl = file.filename;
       }
+
       return await this.categoryService.create(dto);
     } catch (error) {
       throw new HttpException(
@@ -124,17 +125,38 @@ export class CategoryController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Categoryni yangilash' })
   @ApiParam({ name: 'id', type: String, description: 'Category ID' })
-  @ApiBody({ type: UpdateCategoryDto })
   @ApiResponse({
     status: 200,
     description: 'Category muvaffaqiyatli yangilandi',
   })
-  async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueName = `${Date.now()}-${Math.round(
+            Math.random() * 1e9,
+          )}${path.extname(file.originalname)}`;
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
     try {
+      if (file) {
+        // Fayl nomini DTO ga o‘rnatamiz
+        dto.imageUrl = file.filename;
+      }
       return await this.categoryService.update(id, dto);
     } catch (error) {
       throw new HttpException(
-        'Category yangilashda xatolik!',
+        error.message || 'Category yangilashda xatolik!',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -153,7 +175,7 @@ export class CategoryController {
       return await this.categoryService.remove(id);
     } catch (error) {
       throw new HttpException(
-        'Category o‘chirishda xatolik!',
+        error.message || 'Category o‘chirishda xatolik!',
         HttpStatus.BAD_REQUEST,
       );
     }

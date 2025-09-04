@@ -20,6 +20,7 @@ import { UpdateSuggestDto } from './dto/update-suggest.dto';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+
 import {
   ApiTags,
   ApiOperation,
@@ -48,7 +49,7 @@ export class SuggestController {
         title: { type: 'string', example: 'MacBook Pro' },
         price: { type: 'number', example: 1200 },
         rate: { type: 'number', example: 4.5 },
-        categoryId: { type: 'string', example: 'uuid-kategoriya-id' },
+
         file: {
           type: 'string',
           format: 'binary',
@@ -56,6 +57,7 @@ export class SuggestController {
       },
     },
   })
+  @UseInterceptors(FileInterceptor('file')) // 🔴 SHU KERAK!
   @ApiResponse({ status: 200, description: 'Suggest muvaffaqiyatli yaratildi' })
   async create(
     @Body() dto: CreateSuggestDto,
@@ -87,10 +89,10 @@ export class SuggestController {
     description: 'Kategoriya nomi',
   })
   @ApiResponse({ status: 200, description: 'Suggestlar ro‘yxati' })
-  async find(@Query('category') category?: string) {
+  async find(@Query('category') title?: string) {
     try {
-      if (category) {
-        const data = await this.suggestService.findByCategoryName(category);
+      if (title) {
+        const data = await this.suggestService.findByCategoryName(title);
         if (!data.length) {
           throw new HttpException(
             'Ushbu kategoriya bo‘yicha suggest topilmadi!',
@@ -119,7 +121,11 @@ export class SuggestController {
     description: 'Suggest muvaffaqiyatli yangilandi',
   })
   update(@Param('id') id: string, @Body() dto: UpdateSuggestDto) {
-    return this.suggestService.update(id, dto);
+    try {
+      return this.suggestService.update(id, dto);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 
   @Delete('delete/:id')
@@ -131,6 +137,10 @@ export class SuggestController {
     description: 'Suggest muvaffaqiyatli o‘chirildi',
   })
   remove(@Param('id') id: string) {
-    return this.suggestService.remove(id);
+    try {
+      return this.suggestService.remove(id);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
   }
 }

@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateSuggestDto } from './dto/create-suggest.dto';
 import { UpdateSuggestDto } from './dto/update-suggest.dto';
 import { PrismaService } from 'src/core/database/prisma.service';
+import path from 'path';
+import fs from 'fs';
 
 @Injectable()
 export class SuggestService {
@@ -15,25 +17,22 @@ export class SuggestService {
         discount: dto.discount ?? null,
         description: dto.description ?? null,
         image: dto.image ?? null,
-        categoryId: dto.categoryId,
-        userId: dto.userId,
       },
-      include: { category: true, user: true },
     });
   }
 
   async findAll() {
     return this.db.prisma.suggest.findMany({
-      include: { category: true, user: true, reviews: true },
+      include: { _count: { select: { reviews: true } } },
     });
   }
 
-  async findByCategoryName(category: string) {
+  async findByCategoryName(title: string) {
     return this.db.prisma.suggest.findMany({
       where: {
-        category: { title: { equals: category, mode: 'insensitive' } }, // case-insensitive qidiruv
+        title: { equals: title, mode: 'insensitive' }, // case-insensitive qidiruv
       },
-      include: { category: true, user: true, reviews: true },
+      include: { _count: { select: { reviews: true } } },
     });
   }
 
@@ -41,7 +40,21 @@ export class SuggestService {
     return this.db.prisma.suggest.update({ where: { id }, data: dto });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    const exists = await this.db.prisma.suggest.findUnique({ where: { id } });
+    if (!exists) {
+      throw new HttpException('Suggest topilmadi!', HttpStatus.NOT_FOUND);
+    }
+
+    const filePath = path.join(process.cwd(), 'uploads');
+
+    if (exists.image) {
+      const file = path.join(filePath, exists.image);
+
+      if (fs.existsSync(file)) {
+        fs.unlinkSync(file);
+      }
+    }
     return this.db.prisma.suggest.delete({ where: { id } });
   }
 }

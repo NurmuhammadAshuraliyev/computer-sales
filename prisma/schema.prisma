@@ -19,7 +19,6 @@ model User {
   updatedAt   DateTime  @updatedAt
 
   // relationships
-  suggests    Suggest[]
   reviews     Review[]
 
   @@map("users")
@@ -32,18 +31,35 @@ enum Role {
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  title     String     @db.VarChar(100)
+  id        String         @id @default(uuid())
+  title     String         @db.VarChar(100) @unique
   price     Float?
   imageUrl  String?
-  products  Suggest[]
   reviews   Review[]
+  items     CategoryItem[]   
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   @@map("category")
 }
+
+model CategoryItem {
+  id          String    @id @default(uuid())
+  name        String    @db.VarChar(100)   
+  description String?   
+  price       Float?    
+  imageUrl    String?  
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("category_item")
+}
+
 
 model Suggest {
   id          String    @id @default(uuid())
@@ -57,11 +73,8 @@ model Suggest {
   updatedAt   DateTime   @updatedAt
 
   // relationships
-  categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id])
 
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
+  
 
   reviews     Review[]
 

@@ -20,6 +20,7 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { AdminLoginDto } from './dto/admin.login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -82,6 +83,42 @@ export class AuthController {
       return { message, token, user };
     } catch (error) {
       console.log(error);
+      throw new HttpException(error.message, error.status);
+    }
+  }
+
+  @Post('admin/login')
+  @SetMetadata('isPublic', true)
+  @ApiBody({
+    description: 'Admin login maʼlumotlari',
+    type: AdminLoginDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Admin muvaffaqiyatli login qildi',
+    schema: {
+      example: {
+        message: 'Login successful',
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: 'uuid',
+          username: 'admin',
+          role: 'ADMIN',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Notoʻgʻri login yoki parol',
+  })
+  async adminLogin(@Body() adminLoginDto: AdminLoginDto) {
+    try {
+      const { message, token, user } =
+        await this.authService.adminLogin(adminLoginDto);
+
+      return { message, token, user };
+    } catch (error) {
       throw new HttpException(error.message, error.status);
     }
   }

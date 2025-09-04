@@ -11,6 +11,7 @@ import { SuggestModule } from './modules/suggest/suggest.module';
 import { ReviewModule } from './modules/review/review.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CategoryItemModule } from './modules/category-item/category-item.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { join } from 'path';
     CategoriyModule,
     SuggestModule,
     ReviewModule,
+    CategoryItemModule,
   ],
   controllers: [AppController],
   providers: [
